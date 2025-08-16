@@ -1,103 +1,70 @@
-import Image from "next/image";
+//
+// FILE: app/page.tsx
+// CLASSIFICATION: TOP SECRET // OGM-V2 // INTERACTIVE DEMO
+// PURPOSE: The main dashboard component for the QA Command Center.
+//
+"use client";
+import React, { useMemo } from 'react';
+import { getProjectChimeraData } from '@/lib/data-generator';
+import QualityChart from '@/components/QualityChart';
+import PrecisionDiagnostics from '@/components/PrecisionDiagnostics';
+import ConsensusDiagnostics from '@/components/ConsensusDiagnostics';
 
-export default function Home() {
+// This is the core of your "movie set".
+export default function QADashboardPage(): React.JSX.Element {
+  // Memoize the data generation. In a real app, this would be a fetch call.
+  // For a demo, this ensures our story is consistent and the app is fast.
+  const allData = useMemo(() => getProjectChimeraData(), []);
+
+  // We'll process the data for our main overview chart here.
+  const overviewData = useMemo(() => {
+    const weeklyAverages: { [week: number]: { alpha: number[], iou: number[], rework: number[] } } = {};
+
+    allData.forEach(dp => {
+      if (!weeklyAverages[dp.week]) {
+        weeklyAverages[dp.week] = { alpha: [], iou: [], rework: [] };
+      }
+      weeklyAverages[dp.week].alpha.push(dp.krippendorffsAlpha);
+      weeklyAverages[dp.week].iou.push(dp.meanIoU);
+      weeklyAverages[dp.week].rework.push(dp.reworkRate);
+    });
+
+    return Object.keys(weeklyAverages).map(weekStr => {
+      const week = parseInt(weekStr, 10);
+      const data = weeklyAverages[week];
+      const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+      
+      return {
+        name: `Week ${week}`,
+        "Avg. Agreement (Alpha)": parseFloat(avg(data.alpha).toFixed(3)),
+        "Avg. Precision (IoU)": parseFloat(avg(data.iou).toFixed(3)),
+        "Rework Rate": parseFloat(avg(data.rework).toFixed(3)),
+      };
+    });
+  }, [allData]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    // Replicating the Labelbox layout structure.
+    <main className="min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-semibold text-lb-text-primary mb-6">
+          Project: Chimera - QA Command Center
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* This is Mockup 1: The Command Center Overview */}
+        <div className="bg-lb-bg-secondary border border-lb-border-default rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium text-lb-text-secondary mb-4">
+            6-Month Quality & Performance Overview
+          </h2>
+          <div className="h-[400px] w-full">
+            <QualityChart data={overviewData} />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* --- Render the new components here, passing the full dataset --- */}
+        <PrecisionDiagnostics data={allData} />
+        {/* <ConsensusDiagnostics /> */}
+      </div>
+    </main>
   );
 }

@@ -1,26 +1,36 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Standard Tailwind variables */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --radius: 0.5rem;
+    
+    /* Labelbox Style Guide Implementation */
+    --lb-primary-blue: 226 96% 64%; /* #4F6AFB */
+    --lb-bg-primary: 220 20% 98%;    /* #F7F8FA */
+    --lb-bg-secondary: 0 0% 100%;    /* #FFFFFF */
+    --lb-border-default: 220 13% 92%; /* #EAEBEF */
+    --lb-text-primary: 220 13% 13%;   /* #1A202C */
+    --lb-text-secondary: 220 9% 38%;  /* #4A5568 */
+    --lb-text-tertiary: 217 9% 61%;   /* #9098A3 */
+    --lb-accent-green: 148 48% 46%;   /* #38A169 */
+    --lb-accent-red: 0 79% 63%;       /* #E53E3E */
+    --lb-accent-orange: 26 82% 49%;   /* #DD6B20 */
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: hsl(var(--lb-bg-primary));
+    color: hsl(var(--lb-text-primary));
+    font-family: 'Geist', sans-serif;
+  }
 }
