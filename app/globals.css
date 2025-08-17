@@ -20,7 +20,7 @@
     --lb-bg-primary: 220 20% 98%;    /* #F7F8FA */
     --lb-bg-secondary: 0 0% 100%;    /* #FFFFFF */
     --lb-border-default: 220 13% 92%; /* #EAEBEF */
-    --lb-text-primary: 220 13% 13%;   /* #1A202C */
+    --lb-text-primary: 0 0% 100%;   /* White text for dark theme */
     --lb-text-secondary: 220 9% 38%;  /* #4A5568 */
     --lb-text-tertiary: 217 9% 61%;   /* #9098A3 */
     --lb-accent-green: 148 48% 46%;   /* #38A169 */

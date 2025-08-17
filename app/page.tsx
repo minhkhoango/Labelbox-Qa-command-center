@@ -1,69 +1,111 @@
 //
-// FILE: app/page.tsx
-// CLASSIFICATION: TOP SECRET // OGM-V2 // INTERACTIVE DEMO
-// PURPOSE: The main dashboard component for the QA Command Center.
+// FILE: app/page.tsx (Refactored)
+// CLASSIFICATION: TOP SECRET // OGM-V2 // FINAL DEPLOYMENT
 //
 "use client";
-import React, { useMemo } from 'react';
-import { getProjectChimeraData } from '@/lib/data-generator';
-import QualityChart from '@/components/QualityChart';
-import PrecisionDiagnostics from '@/components/PrecisionDiagnostics';
-import ConsensusDiagnostics from '@/components/ConsensusDiagnostics';
 
-// This is the core of your "movie set".
+import React, { useState, useEffect, useMemo } from 'react';
+import Papa from 'papaparse';
+import AnimatedDiagnosticChart from '@/components/AnimatedDiagnosticChart';
+
+// Define the shape of our parsed data once
+export interface ProjectDataPoint {
+  Week: string;
+  "Weekly Throughput": number;
+  "Rework Rate (%)": number;
+  "Cumulative Annotations": number;
+}
+
 export default function QADashboardPage(): React.JSX.Element {
-  // Memoize the data generation. In a real app, this would be a fetch call.
-  // For a demo, this ensures our story is consistent and the app is fast.
-  const allData = useMemo(() => getProjectChimeraData(), []);
+  const [isDiagnosticRun, setIsDiagnosticRun] = useState<boolean>(false);
+  const [projectData, setProjectData] = useState<ProjectDataPoint[]>([]);
 
-  // We'll process the data for our main overview chart here.
-  const overviewData = useMemo(() => {
-    const weeklyAverages: { [week: number]: { alpha: number[], iou: number[], rework: number[] } } = {};
+  // Effect to fetch and parse the data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/project_chimera_dataset.csv');
+      const text = await response.text();
+      const result = Papa.parse<ProjectDataPoint>(text, {
+        header: true,
+        dynamicTyping: true,
+      });
+      setProjectData(result.data);
+    };
+    fetchData();
+  }, []);
 
-    allData.forEach(dp => {
-      if (!weeklyAverages[dp.week]) {
-        weeklyAverages[dp.week] = { alpha: [], iou: [], rework: [] };
-      }
-      weeklyAverages[dp.week].alpha.push(dp.krippendorffsAlpha);
-      weeklyAverages[dp.week].iou.push(dp.meanIoU);
-      weeklyAverages[dp.week].rework.push(dp.reworkRate);
-    });
+  // Memoize KPI calculations so they only run once
+  const kpis = useMemo(() => {
+    if (projectData.length === 0) {
+      return { totalAnnotations: 0, finalReworkRate: "0.0%", reworkCost: "$0" };
+    }
+    const lastEntry = projectData[projectData.length - 2]; // Handle potential empty last line from CSV
+    return {
+      totalAnnotations: lastEntry["Cumulative Annotations"].toLocaleString(),
+      finalReworkRate: `${lastEntry["Rework Rate (%)"].toFixed(1)}%`,
+      reworkCost: "$84,375", // Using our more impactful, pre-calculated number
+    };
+  }, [projectData]);
 
-    return Object.keys(weeklyAverages).map(weekStr => {
-      const week = parseInt(weekStr, 10);
-      const data = weeklyAverages[week];
-      const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-      
-      return {
-        name: `Week ${week}`,
-        "Avg. Agreement (Alpha)": parseFloat(avg(data.alpha).toFixed(3)),
-        "Avg. Precision (IoU)": parseFloat(avg(data.iou).toFixed(3)),
-        "Rework Rate": parseFloat(avg(data.rework).toFixed(3)),
-      };
-    });
-  }, [allData]);
-
+  if (projectData.length === 0) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading Project Data...</div>;
+  }
+  
   return (
-    // Replicating the Labelbox layout structure.
-    <main className="min-h-screen p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8 text-white">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-semibold text-lb-text-primary mb-6">
-          Project: Chimera - QA Command Center
-        </h1>
+        
+        {/* The new, clean KPI Header */}
+        <header className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Project: Chimera</h1>
+            <p className="text-gray-400">QA Command Center</p>
+          </div>
+          <div className="flex space-x-6">
+            <div className="text-right">
+              <span className="text-sm text-gray-400">Total Annotations</span>
+              <p className="text-xl font-bold text-white">{kpis.totalAnnotations}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm text-gray-400">Final Rework Rate</span>
+              <p className="text-xl font-bold text-red-400">{kpis.finalReworkRate}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm text-gray-400">Est. Rework Cost</span>
+              <p className="text-xl font-bold text-red-400">{kpis.reworkCost}</p>
+            </div>
+          </div>
+        </header>
 
-        {/* This is Mockup 1: The Command Center Overview */}
-        <div className="bg-lb-bg-secondary border border-lb-border-default rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-lb-text-secondary mb-4">
-            6-Month Quality & Performance Overview
-          </h2>
-          <div className="h-[400px] w-full">
-            <QualityChart data={overviewData} />
+        {/* The Unified Chart Container */}
+        <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium text-white text-center flex-1">
+                  6-Month Quality & Performance Analysis
+              </h2>
+              {!isDiagnosticRun ? (
+                  <button
+                      onClick={() => setIsDiagnosticRun(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                      Run Quality Diagnostic
+                  </button>
+              ) : (
+                  <button
+                      onClick={() => setIsDiagnosticRun(false)}
+                      className="bg-gray-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-700 transition-colors"
+                  >
+                      Reset
+                  </button>
+              )}
+          </div>
+          <div className="h-[450px] w-full">
+            <AnimatedDiagnosticChart 
+              data={projectData} 
+              isDiagnosticRun={isDiagnosticRun} 
+            />
           </div>
         </div>
-
-        {/* --- Render the new components here, passing the full dataset --- */}
-        <PrecisionDiagnostics data={allData} />
-        {/* <ConsensusDiagnostics /> */}
       </div>
     </main>
   );
