@@ -31,6 +31,5 @@
   body {
     background-color: hsl(var(--lb-bg-primary));
     color: hsl(var(--lb-text-primary));
-    font-family: 'Geist', sans-serif;
   }
 }
