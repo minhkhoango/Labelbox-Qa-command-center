@@ -1,103 +1,149 @@
 //
 // FILE: components/ConsensusDiagnostics.tsx
-// CLASSIFICATION: TOP SECRET // OGM-V2 // CONCEPT DRIFT MODULE
-// PURPOSE: Visualizes consensus breakdown and the root cause of concept drift.
+// CLASSIFICATION: TOP SECRET // OGM-V2 // TEAM ALIGNMENT ANALYSIS
+// PURPOSE: Provides visual evidence for team-level consensus failures.
 //
 "use client";
 
 import React from 'react';
 
-// --- A simple component to simulate a contentious example.
-const ContentiousExample: React.FC<{ annotatorA: string, annotatorB: string }> = ({ annotatorA, annotatorB }) => (
-  <div className="border border-gray-700 p-2 rounded-md bg-[#111827]">
-    <div className="w-full h-24 bg-gray-300 rounded-sm flex items-center justify-center">
-      <span className="text-gray-600 text-sm font-semibold">SparkleDrink</span>
-    </div>
-    <div className="text-xs mt-2 space-y-1">
-      <p className="text-gray-400">Annotator A: <span className="font-semibold text-white">{annotatorA}</span></p>
-      <p className="text-gray-400">Annotator B: <span className="font-semibold text-white">{annotatorB}</span></p>
-    </div>
-  </div>
-);
+// --- MOCK DATA ---
+// In a real application, this data would be fetched based on an analysis
+// of the labeling data to find assets with the highest disagreement scores.
+const consensusIssues = [
+  {
+    assetId: "sparkle_drink_01.jpg",
+    imageUrl: "https://placehold.co/600x400/1f2937/7c3aed?text=SparkleDrink+Can",
+    votes: {
+      "Energy Drink": 3,
+      "Soda": 2,
+    },
+    analysis: {
+      problem: "Category Ambiguity",
+      action: "Update guidelines to clarify the difference between 'Soda' and 'Energy Drink'.",
+    }
+  },
+  {
+    assetId: "blurry_logo_02.jpg",
+    imageUrl: "https://placehold.co/600x400/1f2937/34d399?text=Blurry+Logo",
+    votes: {
+      "Branded Mug": 2,
+      "Unbranded Mug": 2,
+      "Skip": 1,
+    },
+    analysis: {
+      problem: "Insufficient Data Quality",
+      action: "Route this asset for re-capture or flag as unusable.",
+    }
+  },
+  {
+    assetId: "side_view_car_03.jpg",
+    imageUrl: "https://placehold.co/600x400/1f2937/f87171?text=Side-View+Car",
+    votes: {
+      "Sedan": 3,
+      "Coupe": 2,
+    },
+    analysis: {
+      problem: "Edge Case",
+      action: "Establish a clear rule for 2-door vs. 4-door sedans/coupes.",
+    }
+  },
+];
 
+// --- SUB-COMPONENTS ---
 
-// Decision: The data for this is hardcoded to perfectly match the narrative climax.
-// This is a strategic choice to ensure the demo's point is made with maximum clarity.
-const confusionData = {
-  labels: ["Soda", "Energy Drink", "Juice", "Water"],
-  matrix: [
-    [1204, 186, 12, 5],   // Actual: Soda
-    [210, 1050, 8, 3],    // Actual: Energy Drink
-    [8, 5, 1340, 1],     // Actual: Juice
-    [2, 1, 0, 1500],     // Actual: Water
-  ],
-};
+interface Vote {
+  label: string;
+  count: number;
+  total: number;
+}
 
-const getBgColor = (value: number, max: number): string => {
-  if (value === 0) return 'bg-transparent';
-  const intensity = Math.min(Math.floor((value / max) * 5), 4);
-  const colors = ['bg-red-100', 'bg-red-200', 'bg-red-300', 'bg-red-400', 'bg-red-500'];
-  return colors[intensity];
-};
-
-const ConsensusDiagnostics: React.FC = () => {
-  const maxConfusion = Math.max(...confusionData.matrix.flat().filter((v, i) => i % 5 !== 0));
+const VoteBar: React.FC<Vote> = ({ label, count, total }) => {
+  const percentage = (count / total) * 100;
+  const colors: { [key: string]: string } = {
+    "Energy Drink": "bg-purple-500",
+    "Soda": "bg-red-500",
+    "Branded Mug": "bg-teal-500",
+    "Unbranded Mug": "bg-gray-500",
+    "Skip": "bg-yellow-600",
+    "Sedan": "bg-blue-500",
+    "Coupe": "bg-indigo-500",
+  };
+  const colorClass = colors[label] || "bg-gray-600";
 
   return (
-    <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6 mt-6">
-      <h2 className="text-lg font-medium text-gray-300 mb-4">
-        Consensus Breakdown (Month 6)
-      </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="flex items-center space-x-4">
+      <span className="w-32 text-sm font-medium text-gray-300 truncate">{label}</span>
+      <div className="flex-1 bg-gray-700 rounded-full h-2.5">
+        <div 
+          className={`${colorClass} h-2.5 rounded-full`} 
+          style={{ width: `${percentage}%` }}
+        ></div>
+      </div>
+      <span className="w-10 text-sm font-semibold text-white">{count} vote{count > 1 ? 's' : ''}</span>
+    </div>
+  );
+};
+
+
+interface ConsensusIssueProps {
+  issue: typeof consensusIssues[0];
+}
+
+const ConsensusIssueCard: React.FC<ConsensusIssueProps> = ({ issue }) => {
+  const totalVotes = Object.values(issue.votes).reduce((sum, count) => sum + count, 0);
+
+  return (
+    // THIS IS THE FIX. `flex-col` for mobile, `md:flex-row` for desktop.
+    <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg overflow-hidden flex flex-col md:flex-row">
+      {/* Left Side: Image */}
+      <div className="md:w-1/3 flex-shrink-0">
+        <img 
+          src={issue.imageUrl} 
+          alt={issue.assetId} 
+          className="object-cover w-full h-48 md:h-full"
+          onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/ef4444/ffffff?text=Image+Error'; }}
+        />
+      </div>
+      
+      {/* Right Side: Analysis */}
+      <div className="p-6 flex flex-col justify-between md:w-2/3">
         <div>
-          <h3 className="text-base font-medium text-gray-300 mb-2">
-            Class Confusion Heatmap
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">Highlights systematic disagreement between annotators for specific classes.</p>
-          {/* A simple table styled to look like a heatmap. Effective and fast. */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-400 uppercase">
-                <tr>
-                  <th scope="col" className="py-2 px-2">Actual</th>
-                  {confusionData.labels.map(label => (
-                    <th key={label} scope="col" className="py-2 px-2 text-center">{label}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {confusionData.matrix.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="border-t border-gray-700">
-                    <th scope="row" className="py-2 px-2 font-medium text-white whitespace-nowrap">
-                      {confusionData.labels[rowIndex]}
-                    </th>
-                    {row.map((cell, cellIndex) => {
-                      const isDiagonal = rowIndex === cellIndex;
-                      const bgColor = isDiagonal ? 'bg-green-100' : getBgColor(cell, maxConfusion);
-                      return (
-                        <td key={cellIndex} className={`py-2 px-2 text-center ${bgColor} ${isDiagonal ? 'text-green-800' : 'text-red-800'}`}>
-                          {cell}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="text-sm font-mono text-gray-400 mb-2">{issue.assetId}</div>
+          <h4 className="text-lg font-bold text-white mb-4">Consensus Breakdown</h4>
+          <div className="space-y-3">
+            {Object.entries(issue.votes).map(([label, count]) => (
+              <VoteBar key={label} label={label} count={count} total={totalVotes} />
+            ))}
           </div>
         </div>
-        <div>
-          <h3 className="text-base font-medium text-gray-300 mb-2">
-            Most Contentious Examples
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">The ambiguous items causing the "Soda" vs. "Energy Drink" concept drift.</p>
-          <div className="grid grid-cols-2 gap-4">
-              <ContentiousExample annotatorA="Soda" annotatorB="Energy Drink"/>
-              <ContentiousExample annotatorA="Energy Drink" annotatorB="Soda"/>
-              <ContentiousExample annotatorA="Soda" annotatorB="Energy Drink"/>
-              <ContentiousExample annotatorA="Energy Drink" annotatorB="Soda"/>
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <div className="text-red-400 font-semibold text-md">
+            Verdict: <span className="font-bold">Consensus Failure</span>
+          </div>
+          <div className="text-gray-300 text-sm mt-1">
+            <span className="font-semibold text-gray-400">Action Required:</span> {issue.analysis.action}
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- MAIN COMPONENT ---
+
+const ConsensusDiagnostics: React.FC = () => {
+  return (
+    <div className="w-full">
+      <div className="text-center mb-6">
+        <h3 className="text-xl font-bold text-white">Evidence Locker</h3>
+        <p className="text-gray-400">Top 3 assets with the highest label disagreement.</p>
+      </div>
+      <div className="space-y-8">
+        {consensusIssues.map((issue) => (
+          <ConsensusIssueCard key={issue.assetId} issue={issue} />
+        ))}
       </div>
     </div>
   );
