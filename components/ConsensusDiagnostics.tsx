@@ -8,8 +8,8 @@
 import React from 'react';
 
 // --- MOCK DATA ---
-// In a real application, this data would be fetched based on an analysis
-// of the labeling data to find assets with the highest disagreement scores.
+// In a production environment, this data would be fetched based on an analysis
+// of the labeling data to identify assets with the highest disagreement scores.
 const consensusIssues = [
   {
     assetId: "sparkle_drink_01.jpg",
@@ -20,19 +20,20 @@ const consensusIssues = [
     },
     analysis: {
       problem: "Category Ambiguity",
-      action: "Update guidelines to clarify the difference between 'Soda' and 'Energy Drink'.",
+      action: "Update annotation guidelines to clarify the distinction between 'Soda' and 'Energy Drink' categories.",
     }
   },
   {
     assetId: "blurry_logo_02.jpg",
-    imageUrl: "https://img.fruugo.com/product/8/36/1653837368_0340_0340.jpg",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPTr_lD7DP8Z1BwA1UXCe9X9XWrOHR3SUWqg&s",
     votes: {
-      "Branded Mug": 3,
+      "Branded Mug": 2,
       "Unbranded Mug": 2,
+      "Skip": 1
     },
     analysis: {
       problem: "Insufficient Data Quality",
-      action: "Route this asset for re-capture or flag as unusable.",
+      action: "Route this asset for re-capture or flag as unusable for training.",
     }
   },
   {
@@ -43,13 +44,36 @@ const consensusIssues = [
       "Coupe": 2,
     },
     analysis: {
-      problem: "Edge Case",
-      action: "Establish a clear rule for 2-door vs. 4-door sedans/coupes.",
+      problem: "Edge Case Classification",
+      action: "Establish clear annotation rules for distinguishing 2-door vs. 4-door sedans/coupes.",
     }
   },
 ];
 
 // --- SUB-COMPONENTS ---
+
+// Function to scale down images if they exceed 500px in any dimension
+const getScaledImageDimensions = (originalWidth: number, originalHeight: number, maxDimension: number = 500) => {
+  if (originalWidth <= maxDimension && originalHeight <= maxDimension) {
+    return { width: originalWidth, height: originalHeight };
+  }
+  
+  const aspectRatio = originalWidth / originalHeight;
+  
+  if (originalWidth > originalHeight) {
+    // Landscape image
+    return {
+      width: maxDimension,
+      height: Math.round(maxDimension / aspectRatio)
+    };
+  } else {
+    // Portrait or square image
+    return {
+      width: Math.round(maxDimension * aspectRatio),
+      height: maxDimension
+    };
+  }
+};
 
 interface Vote {
   label: string;
@@ -98,9 +122,24 @@ const ConsensusIssueCard: React.FC<ConsensusIssueProps> = ({ issue }) => {
         <img 
           src={issue.imageUrl} 
           alt={issue.assetId} 
-          className="object-cover w-full h-48 md:h-full max-w-[500px] max-h-[500px]"
-          style={{ maxWidth: '500px', maxHeight: '500px' }}
-          onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/EAEBEF/4A5568?text=Image+Error'; }}
+          className="object-cover w-full h-48 md:h-full"
+          style={{
+            maxWidth: '400px',
+            maxHeight: '400px',
+            width: 'auto',
+            height: 'auto'
+          }}
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            const { width, height } = getScaledImageDimensions(img.naturalWidth, img.naturalHeight);
+            img.style.width = `${width}px`;
+            img.style.height = `${height}px`;
+          }}
+          onError={(e) => { 
+            e.currentTarget.src = 'https://placehold.co/600x400/EAEBEF/4A5568?text=Image+Error';
+            e.currentTarget.style.width = '500px';
+            e.currentTarget.style.height = '400px';
+          }} 
         />
       </div>
       
@@ -117,10 +156,10 @@ const ConsensusIssueCard: React.FC<ConsensusIssueProps> = ({ issue }) => {
         </div>
         <div className="mt-6 pt-4 border-t border-lb-border-light">
           <div className="accent-red font-semibold text-md">
-            Verdict: <span className="font-bold">Consensus Failure</span>
+            Assessment: <span className="font-bold">Consensus Failure</span>
           </div>
           <div className="text-lb-text-secondary text-sm mt-1">
-            <span className="font-semibold text-lb-text-primary">Action Required:</span> {issue.analysis.action}
+            <span className="font-semibold text-lb-text-primary">Recommended Action:</span> {issue.analysis.action}
           </div>
         </div>
       </div>
@@ -135,7 +174,7 @@ const ConsensusDiagnostics: React.FC = () => {
     <div className="w-full">
       <div className="text-center mb-8">
         <h3 className="text-xl font-semibold text-lb-text-primary mb-2">Evidence Locker</h3>
-        <p className="text-lb-text-secondary">Top 3 assets with the highest label disagreement.</p>
+        <p className="text-lb-text-secondary">Top 3 assets with the highest annotation disagreement scores.</p>
       </div>
       <div className="space-y-6">
         {consensusIssues.map((issue, index) => (

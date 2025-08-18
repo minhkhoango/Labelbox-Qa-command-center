@@ -24,7 +24,7 @@ const MemberSelector: React.FC<MemberSelectorProps> = ({
     <div className="flex justify-start mb-6">
       <div className="flex items-center gap-4">
         <label htmlFor="member-select" className="text-sm font-medium text-lb-text-secondary">
-          Select Team Member:
+          Select Annotator:
         </label>
         <select
           id="member-select"

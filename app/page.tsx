@@ -11,7 +11,7 @@ import DrillDownChart from '../components/DrillDownChart';
 import IndividualTeamMemberChart from '../components/IndividualTeamMemberChart';
 import ConsensusDiagnostics from '../components/ConsensusDiagnostics';
 import MemberSelector from '../components/MemberSelector';
-import { getTeamMemberRankings, getWorstPerformingMember } from '../lib/performanceUtils';
+import { getTeamMemberRankings, getWorstPerformingMember, calculateReworkCost } from '../lib/performanceUtils';
 
 // Define the shape of our parsed data once
 export interface ProjectDataPoint {
@@ -110,7 +110,7 @@ export default function QADashboardPage(): React.JSX.Element {
     const kpiData = {
       totalAnnotations: lastEntry["Cumulative Annotations"].toLocaleString(),
       finalReworkRate: `${lastEntry["Rework Rate (%)"].toFixed(1)}%`,
-      reworkCost: "$84,375",
+      reworkCost: calculateReworkCost(projectData),
     };
 
     const diagnosticData = projectData.map((d, i) => {
@@ -162,7 +162,7 @@ export default function QADashboardPage(): React.JSX.Element {
               className="h-12 w-auto object-contain"
             />
             <div>
-              <h2 className="text-2xl font-semibold text-lb-text-primary">QA Command Center</h2>
+              <h2 className="text-2xl font-semibold text-lb-text-primary">Quality Command Center</h2>
             </div>
           </div>
           <div className="flex space-x-8">
@@ -171,7 +171,7 @@ export default function QADashboardPage(): React.JSX.Element {
               <p className="text-xl font-bold text-lb-text-primary">{kpis.totalAnnotations}</p>
             </div>
             <div className="text-right">
-              <span className="text-sm text-lb-text-secondary block">Est. Rework Cost</span>
+              <span className="text-sm text-lb-text-secondary block">Est. Quality Drift Cost</span>
               <p className="text-xl font-bold accent-red">{kpis.reworkCost}</p>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function QADashboardPage(): React.JSX.Element {
         <div className="card mb-8">
           <div className="card-header">
             <h3 className="text-center text-lb-text-secondary">
-              6-Month Throughput & Rework Summary
+              6-Month Throughput & Quality Metrics Summary
             </h3>
           </div>
           <div className="h-[350px] w-full">
@@ -194,7 +194,7 @@ export default function QADashboardPage(): React.JSX.Element {
             onClick={() => setShowDiagnostics(!showDiagnostics)}
             className="btn-primary px-8 py-4 text-lg font-semibold min-w-[300px] min-h-[50px] flex items-center justify-center"
           >
-            {showDiagnostics ? "Hide Diagnostic Analysis" : "Run Diagnostic Analysis"}
+            {showDiagnostics ? "Hide Quality Analysis" : "Run Quality Analysis"}
           </button>
         </div>
 
@@ -221,7 +221,7 @@ export default function QADashboardPage(): React.JSX.Element {
               <div className="card">
                 <div className="card-header">
                   <h3 className="text-center text-lb-text-secondary">
-                    Team Consensus (Krippendorff's Alpha)
+                    Team Agreement (Krippendorff's Alpha)
                   </h3>
                 </div>
                 <div className="h-[320px] w-full">
@@ -248,7 +248,7 @@ export default function QADashboardPage(): React.JSX.Element {
               {selectedMember && (
                 <div className="mt-6 p-6 bg-lb-bg-tertiary border border-lb-border-light rounded-lg">
                   <h3 className="text-center text-lb-text-secondary mb-4">
-                    {selectedMember} - 24-Week Performance Overview
+                    {selectedMember} - 24-Week Quality Performance Overview
                   </h3>
                   <div className="h-[400px] w-full">
                     <IndividualTeamMemberChart 

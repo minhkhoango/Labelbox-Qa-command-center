@@ -97,3 +97,70 @@ export function getWorstPerformingMember(data: IndividualDataPoint[]): string {
   const rankings = getTeamMemberRankings(data);
   return rankings[0]?.member || '';
 } 
+
+/**
+ * Calculate the estimated quality drift cost based on team performance data
+ * Formula: Total Rework Cost + Downstream Impact
+ * 
+ * Rework Cost = Σ[(Rework_count(week_i) - Rework_count(week_1)) * 0.033 * 20]
+ * Downstream Impact = Σ[Max(0, (IoU_week_1 - IoU_week_i)) * 10,000,000]
+ * 
+ * @param projectData - Array of project data points
+ * @returns The calculated cost as a formatted currency string
+ */
+export function calculateReworkCost(projectData: any[]): string {
+  if (projectData.length === 0) return "$0";
+  
+  // Constants from the user's specification
+  const TIME_TAKEN_PER_ANNOTATION = 0.033; // hours per annotation
+  const ANNOTATOR_SALARY = 20; // dollars per hour
+  const SALES_IMPACT = 10000000; // 10 million dollars sales impact per IoU point
+  
+  // Week 1 is the benchmark (index 0)
+  const benchmarkWeek = projectData[0];
+  const benchmarkReworkRate = benchmarkWeek["Rework Rate (%)"];
+  const benchmarkIoU = benchmarkWeek["Mean IoU"];
+  
+  let totalReworkCost = 0;
+  let totalDownstreamImpact = 0;
+  
+  // Calculate for each week starting from week 2 (index 1)
+  for (let i = 1; i < projectData.length; i++) {
+    const weekData = projectData[i];
+    const currentReworkRate = weekData["Rework Rate (%)"];
+    const currentIoU = weekData["Mean IoU"];
+    const weeklyThroughput = weekData["Weekly Throughput"];
+    
+    // Rework Cost calculation
+    const benchmarkReworkCount = weeklyThroughput * (benchmarkReworkRate / 100);
+    const currentReworkCount = weeklyThroughput * (currentReworkRate / 100);
+    const reworkCostDifference = (currentReworkCount - benchmarkReworkCount) * TIME_TAKEN_PER_ANNOTATION * ANNOTATOR_SALARY;
+    
+    totalReworkCost += reworkCostDifference;
+    
+    // Downstream Impact calculation - only count when IoU degrades (positive impact = cost)
+    const iouDrop = benchmarkIoU - currentIoU;
+    const downstreamImpact = Math.max(0, iouDrop * SALES_IMPACT); // Only count degradation
+    
+    totalDownstreamImpact += downstreamImpact;
+  }
+  
+  // Total estimated quality drift
+  const totalEstimatedDrift = totalReworkCost + totalDownstreamImpact;
+  
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Quality Drift Cost Calculation Debug:');
+    console.log(`  Total Rework Cost: $${totalReworkCost.toFixed(2)}`);
+    console.log(`  Total Downstream Impact: $${totalDownstreamImpact.toFixed(2)}`);
+    console.log(`  Total Estimated Quality Drift: $${totalEstimatedDrift.toFixed(2)}`);
+  }
+  
+  // Format the result as currency
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(totalEstimatedDrift);
+} 

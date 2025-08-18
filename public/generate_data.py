@@ -15,7 +15,7 @@ TRAINING_IMPACT_WEEKS: int = 4  # How many weeks the core team is affected
 CORE_TEAM_THROUGHPUT_DIP: float = 0.20 # 20% drop in throughput at the start of training
 CORE_TEAM_QUALITY_DIP_MULTIPLIER: float = 1.5 # Rework rate temporarily increases by 50%
 
-# Annotator Drift Parameters (Performance degradation over time)
+# Quality Drift Parameters (Performance degradation over time)
 # Only quality drift - throughput has no drift over time (only affected by training tax)
 CORE_DRIFT_REWORK_RATE_BASE: float = 0.0008  # 20x stronger - realistic 6-month drift
 CORE_DRIFT_REWORK_RATE_EXPONENT: float = 1.2  # More gradual, realistic growth
@@ -240,9 +240,9 @@ def aggregate_and_write_team_performance_csv(individual_data: List[Dict[str, Any
         print(f"Error writing to file: {e}")
 
 def print_drift_summary() -> None:
-    """Prints a summary of the annotator drift effects over the simulation period."""
+    """Prints a summary of the quality drift effects over the simulation period."""
     print("\n" + "="*60)
-    print("ANNOTATOR DRIFT IMPACT SUMMARY")
+    print("QUALITY DRIFT IMPACT SUMMARY")
     print("="*60)
     
     # Core team drift over 24 weeks
@@ -258,7 +258,7 @@ def print_drift_summary() -> None:
     
     print(f"Core Team ({TOTAL_WEEKS} weeks): Rework +{core_final_rework_drift:.3f}, IoU -{core_final_iou_drift:.3f}, Alpha -{core_final_alpha_drift:.3f}")
     print(f"Alex ({alex_weeks} weeks): Rework +{alex_final_rework_drift:.3f}, IoU -{alex_final_iou_drift:.3f}, Alpha -{alex_final_alpha_drift:.3f}")
-    print(f"Alex drift: {ALEX_DRIFT_REWORK_RATE_BASE/CORE_DRIFT_REWORK_RATE_BASE:.0f}x stronger than core team")
+    print(f"Alex quality drift: {ALEX_DRIFT_REWORK_RATE_BASE/CORE_DRIFT_REWORK_RATE_BASE:.0f}x stronger than core team")
     print("="*60)
 
 

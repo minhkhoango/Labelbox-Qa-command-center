@@ -122,7 +122,7 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
           }} 
         />
         
-        {/* Bar charts for Throughput and Reworked Annotations */}
+        {/* Bar charts for Throughput and Quality Issues */}
         <Bar 
           dataKey="Throughput" 
           yAxisId="left" 
@@ -136,7 +136,7 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
           yAxisId="left" 
           fill={`url(#colorReworked-${memberName})`} 
           barSize={15}
-          name="Reworked Annotations"
+          name="Quality Issues"
         />
         
         {/* Line charts for Mean IoU and Krippendorff's Alpha */}
