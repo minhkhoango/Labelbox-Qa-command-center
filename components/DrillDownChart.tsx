@@ -30,22 +30,35 @@ const DrillDownChart: React.FC<DrillDownChartProps> = ({ data, lines, yAxisForma
       <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
         <XAxis
           dataKey="name"
-          stroke="#6b7280"
+          stroke="var(--lb-text-tertiary)"
           fontSize={12}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
           ticks={data.map(d => d.name).filter((_, i) => i % 4 === 0)}
           interval={0}
         />
         <YAxis
-          stroke="#6b7280"
+          stroke="var(--lb-text-tertiary)"
           fontSize={12}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
           tickFormatter={yAxisFormatter}
           domain={yAxisDomain || [0, 'dataMax']}
         />
         <Tooltip
-          contentStyle={{ backgroundColor: '#1f2937', borderColor: '#4b5563', borderRadius: '0.5rem' }}
-          labelStyle={{ color: '#d1d5db' }}
+          contentStyle={{ 
+            backgroundColor: 'var(--lb-bg-secondary)', 
+            borderColor: 'var(--lb-border-default)', 
+            borderRadius: 'var(--lb-radius-md)',
+            boxShadow: 'var(--lb-shadow-md)',
+            color: 'var(--lb-text-primary)'
+          }}
+          labelStyle={{ color: 'var(--lb-text-secondary)' }}
         />
-        <Legend wrapperStyle={{ bottom: 0 }} />
+        <Legend 
+          wrapperStyle={{ 
+            bottom: 0,
+            color: 'var(--lb-text-secondary)'
+          }} 
+        />
 
         {lines.map(line => (
           <Line

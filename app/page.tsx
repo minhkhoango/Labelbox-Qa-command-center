@@ -141,76 +141,94 @@ export default function QADashboardPage(): React.JSX.Element {
   }, [memberRankings, selectedMember, individualData]);
 
   if (projectData.length === 0) {
-    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading Project Data...</div>;
+    return (
+      <div className="min-h-screen bg-lb-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lb-primary-blue mx-auto mb-4"></div>
+          <p className="text-lb-text-secondary">Loading Project Data...</p>
+        </div>
+      </div>
+    );
   }
   
   return (
-    <main className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8 text-white">
+    <main className="min-h-screen bg-lb-bg-primary p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-white">Project: Chimera</h1>
-            <p className="text-gray-400">QA Command Center</p>
+        <header className="flex justify-between items-center mb-8 p-6 bg-lb-bg-secondary rounded-lg border border-lb-border-default shadow-lb-sm">
+          <div className="flex items-center space-x-4">
+            <img 
+              src="https://i0.wp.com/ubiai.tools/wp-content/uploads/2024/01/Labelbox_Logo.jpg?fit=2120%2C1110&ssl=1" 
+              alt="Labelbox Logo" 
+              className="h-12 w-auto object-contain"
+            />
+            <div>
+              <h2 className="text-2xl font-semibold text-lb-text-primary">QA Command Center</h2>
+            </div>
           </div>
-          <div className="flex space-x-6">
+          <div className="flex space-x-8">
             <div className="text-right">
-              <span className="text-sm text-gray-400">Total Annotations</span>
-              <p className="text-xl font-bold text-white">{kpis.totalAnnotations}</p>
+              <span className="text-sm text-lb-text-secondary block">Total Annotations</span>
+              <p className="text-xl font-bold text-lb-text-primary">{kpis.totalAnnotations}</p>
             </div>
             <div className="text-right">
-              <span className="text-sm text-gray-400">Est. Rework Cost</span>
-              <p className="text-xl font-bold text-red-400">{kpis.reworkCost}</p>
+              <span className="text-sm text-lb-text-secondary block">Est. Rework Cost</span>
+              <p className="text-xl font-bold accent-red">{kpis.reworkCost}</p>
             </div>
           </div>
         </header>
 
-        <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6 ">
-          <h2 className="text-lg font-medium text-gray-300 mb-4 text-center">
-            6-Month Throughput & Rework Summary
-          </h2>
+        <div className="card mb-8">
+          <div className="card-header">
+            <h3 className="text-center text-lb-text-secondary">
+              6-Month Throughput & Rework Summary
+            </h3>
+          </div>
           <div className="h-[350px] w-full">
             {/* Your original chart, preserved as requested */}
             <MainDashboardChart data={projectData} />
           </div>
         </div>
 
-
-        <div className="flex justify-center py-16">
+        <div className="flex justify-center py-8">
           <button
             onClick={() => setShowDiagnostics(!showDiagnostics)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border-2 border-blue-500/50 min-w-[300px] min-h-[50px] flex items-center justify-center"
+            className="btn-primary px-8 py-4 text-lg font-semibold min-w-[300px] min-h-[50px] flex items-center justify-center"
           >
             {showDiagnostics ? "Hide Diagnostic Analysis" : "Run Diagnostic Analysis"}
           </button>
         </div>
 
         {showDiagnostics && (
-          <div>
-            <div className="flex flex-row gap-8" style={{ minHeight: '400px' }}>
-              <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
-                  Team Precision (IoU) Analysis
-                </h3>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="card">
+                <div className="card-header">
+                  <h3 className="text-center text-lb-text-secondary">
+                    Team Precision (IoU) Analysis
+                  </h3>
+                </div>
                 <div className="h-[320px] w-full">
                   <DrillDownChart 
                     data={iouChartData}
                     lines={[
-                      { dataKey: "Team Avg Precision (IoU)", color: "#34D399" },
+                      { dataKey: "Team Avg Precision (IoU)", color: "var(--lb-accent-green)" },
                     ]}
                     yAxisFormatter={(value: number) => value.toFixed(3)}
                     yAxisDomain={[0.8, 1.0]}
                   />
                 </div>
               </div>
-              <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
-                  Team Consensus (Krippendorff's Alpha)
-                </h3>
+              <div className="card">
+                <div className="card-header">
+                  <h3 className="text-center text-lb-text-secondary">
+                    Team Consensus (Krippendorff's Alpha)
+                  </h3>
+                </div>
                 <div className="h-[320px] w-full">
                   <DrillDownChart 
                     data={iouChartData}
                     lines={[
-                      { dataKey: "Team Consensus (Alpha)", color: "#8B5CF6" },
+                      { dataKey: "Team Consensus (Alpha)", color: "var(--lb-accent-purple)" },
                     ]}
                     yAxisFormatter={(value: number) => value.toFixed(3)}
                     yAxisDomain={[0.8, 1.0]}
@@ -220,9 +238,7 @@ export default function QADashboardPage(): React.JSX.Element {
             </div>
             
             {/* Individual Team Member Analysis */}
-            <div style={{ height: '30px' }}></div>
-            
-            <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
+            <div className="card">
               <MemberSelector
                 selectedMember={selectedMember}
                 onMemberChange={setSelectedMember}
@@ -230,8 +246,8 @@ export default function QADashboardPage(): React.JSX.Element {
               />
               
               {selectedMember && (
-                <div className="bg-[#1F2937] border border-gray-600 rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
+                <div className="mt-6 p-6 bg-lb-bg-tertiary border border-lb-border-light rounded-lg">
+                  <h3 className="text-center text-lb-text-secondary mb-4">
                     {selectedMember} - 24-Week Performance Overview
                   </h3>
                   <div className="h-[400px] w-full">
@@ -243,7 +259,6 @@ export default function QADashboardPage(): React.JSX.Element {
                 </div>
               )}
             </div>
-            <div style={{ height: '20px' }}></div>
             
             <ConsensusDiagnostics />
           </div>

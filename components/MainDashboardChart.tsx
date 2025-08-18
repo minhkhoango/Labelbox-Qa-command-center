@@ -29,20 +29,63 @@ const MainDashboardChart: React.FC<MainChartProps> = ({ data }) => {
       <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
           <defs>
             <linearGradient id="colorThroughput" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4}/>
-              <stop offset="95%" stopColor="#2563EB" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="var(--lb-primary-blue)" stopOpacity={0.6}/>
+              <stop offset="95%" stopColor="var(--lb-primary-blue)" stopOpacity={0.1}/>
             </linearGradient>
           </defs>
-        <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
-        <YAxis yAxisId="left" orientation="left" stroke="#6b7280" fontSize={12} domain={[0, 'dataMax']} />
-        <YAxis yAxisId="right" orientation="right" stroke="#6b7280" fontSize={12} tickFormatter={(value) => `${value.toFixed(1)}%`} domain={[0, 10]} />
-        <Tooltip
-          contentStyle={{ backgroundColor: '#1f2937', borderColor: '#4b5563', borderRadius: '0.5rem' }}
-          labelStyle={{ color: '#d1d5db' }}
+        <XAxis 
+          dataKey="name" 
+          stroke="var(--lb-text-tertiary)" 
+          fontSize={12}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
         />
-        <Legend wrapperStyle={{ bottom: 0 }} />
-        <Bar dataKey="Weekly Throughput" yAxisId="left" fill="url(#colorThroughput)" barSize={20} />
-        <Line yAxisId="right" type="monotone" dataKey="Rework Rate (%)" stroke="#F87171" strokeWidth={2} dot={false} />
+        <YAxis 
+          yAxisId="left" 
+          orientation="left" 
+          stroke="var(--lb-text-tertiary)" 
+          fontSize={12} 
+          domain={[0, 'dataMax']}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
+        />
+        <YAxis 
+          yAxisId="right" 
+          orientation="right" 
+          stroke="var(--lb-text-tertiary)" 
+          fontSize={12} 
+          tickFormatter={(value) => `${value.toFixed(1)}%`} 
+          domain={[0, 10]}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
+        />
+        <Tooltip
+          contentStyle={{ 
+            backgroundColor: 'var(--lb-bg-secondary)', 
+            borderColor: 'var(--lb-border-default)', 
+            borderRadius: 'var(--lb-radius-md)',
+            boxShadow: 'var(--lb-shadow-md)',
+            color: 'var(--lb-text-primary)'
+          }}
+          labelStyle={{ color: 'var(--lb-text-secondary)' }}
+        />
+        <Legend 
+          wrapperStyle={{ 
+            bottom: 0,
+            color: 'var(--lb-text-secondary)'
+          }} 
+        />
+        <Bar 
+          dataKey="Weekly Throughput" 
+          yAxisId="left" 
+          fill="url(#colorThroughput)" 
+          barSize={20} 
+        />
+        <Line 
+          yAxisId="right" 
+          type="monotone" 
+          dataKey="Rework Rate (%)" 
+          stroke="var(--lb-accent-red)" 
+          strokeWidth={2} 
+          dot={false} 
+        />
       </ComposedChart>
     </ResponsiveContainer>
   );

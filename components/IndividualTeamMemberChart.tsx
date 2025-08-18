@@ -61,19 +61,20 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
       <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
         <defs>
           <linearGradient id={`colorThroughput-${memberName}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#2563EB" stopOpacity={0.1}/>
+            <stop offset="5%" stopColor="var(--lb-primary-blue)" stopOpacity={0.6}/>
+            <stop offset="95%" stopColor="var(--lb-primary-blue)" stopOpacity={0.1}/>
           </linearGradient>
           <linearGradient id={`colorReworked-${memberName}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#DC2626" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#DC2626" stopOpacity={0.1}/>
+            <stop offset="5%" stopColor="var(--lb-accent-red)" stopOpacity={0.6}/>
+            <stop offset="95%" stopColor="var(--lb-accent-red)" stopOpacity={0.1}/>
           </linearGradient>
         </defs>
         
         <XAxis 
           dataKey="name" 
-          stroke="#6b7280" 
+          stroke="var(--lb-text-tertiary)" 
           fontSize={12}
+          tick={{ fill: 'var(--lb-text-secondary)' }}
           ticks={chartData.map((_, i) => `W${i + 1}`).filter((_, i) => i % 4 === 0)}
           interval={0}
         />
@@ -81,23 +82,31 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
         <YAxis 
           yAxisId="left" 
           orientation="left" 
-          stroke="#6b7280" 
+          stroke="var(--lb-text-tertiary)" 
           fontSize={12} 
+          tick={{ fill: 'var(--lb-text-secondary)' }}
           domain={[0, 'dataMax']} 
         />
         
         <YAxis 
           yAxisId="right" 
           orientation="right" 
-          stroke="#6b7280" 
+          stroke="var(--lb-text-tertiary)" 
           fontSize={12} 
+          tick={{ fill: 'var(--lb-text-secondary)' }}
           tickFormatter={(value) => `${value.toFixed(1)}%`} 
           domain={[85, 100]} 
         />
         
         <Tooltip
-          contentStyle={{ backgroundColor: '#1f2937', borderColor: '#4b5563', borderRadius: '0.5rem' }}
-          labelStyle={{ color: '#d1d5db' }}
+          contentStyle={{ 
+            backgroundColor: 'var(--lb-bg-secondary)', 
+            borderColor: 'var(--lb-border-default)', 
+            borderRadius: 'var(--lb-radius-md)',
+            boxShadow: 'var(--lb-shadow-md)',
+            color: 'var(--lb-text-primary)'
+          }}
+          labelStyle={{ color: 'var(--lb-text-secondary)' }}
           formatter={(value: any, name: string) => {
             if (name === "Mean IoU (%)" || name === "Krippendorff's Alpha (%)") {
               return [value, name];
@@ -106,7 +115,12 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
           }}
         />
         
-        <Legend wrapperStyle={{ bottom: 0 }} />
+        <Legend 
+          wrapperStyle={{ 
+            bottom: 0,
+            color: 'var(--lb-text-secondary)'
+          }} 
+        />
         
         {/* Bar charts for Throughput and Reworked Annotations */}
         <Bar 
@@ -130,7 +144,7 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
           yAxisId="right" 
           type="monotone" 
           dataKey="Mean IoU (%)" 
-          stroke="#34D399" 
+          stroke="var(--lb-accent-green)" 
           strokeWidth={2} 
           dot={false}
           name="Mean IoU (%)"
@@ -141,7 +155,7 @@ const IndividualTeamMemberChart: React.FC<IndividualTeamMemberChartProps> = ({ d
           yAxisId="right" 
           type="monotone" 
           dataKey="Krippendorff's Alpha (%)" 
-          stroke="#8B5CF6" 
+          stroke="var(--lb-accent-purple)" 
           strokeWidth={2} 
           dot={false}
           name="Krippendorff's Alpha (%)"

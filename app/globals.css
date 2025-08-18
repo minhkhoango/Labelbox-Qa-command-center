@@ -4,33 +4,153 @@
 
 @layer base {
   :root {
-    /* Standard Tailwind variables */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --radius: 0.5rem;
+    /* Labelbox Design System - Light Theme */
     
-    /* Labelbox Style Guide Implementation */
-    --lb-primary-blue: 226 96% 64%; /* #4F6AFB */
-    --lb-bg-primary: 220 20% 98%;    /* #F7F8FA */
-    --lb-bg-secondary: 0 0% 100%;    /* #FFFFFF */
-    --lb-border-default: 220 13% 92%; /* #EAEBEF */
-    --lb-text-primary: 0 0% 100%;   /* White text for dark theme */
-    --lb-text-secondary: 220 9% 38%;  /* #4A5568 */
-    --lb-text-tertiary: 217 9% 61%;   /* #9098A3 */
-    --lb-accent-green: 148 48% 46%;   /* #38A169 */
-    --lb-accent-red: 0 79% 63%;       /* #E53E3E */
-    --lb-accent-orange: 26 82% 49%;   /* #DD6B20 */
+    /* Primary Colors */
+    --lb-primary-blue: #4F6AFB;
+    --lb-primary-blue-hover: #3F57E0;
+    --lb-primary-blue-light: #F0F2FF;
+    
+    /* Background Colors */
+    --lb-bg-primary: #F7F8FA;      /* Main page background */
+    --lb-bg-secondary: #FFFFFF;    /* Card/container backgrounds */
+    --lb-bg-tertiary: #FAFBFB;     /* Subtle background variation */
+    
+    /* Border Colors */
+    --lb-border-default: #EAEBEF;  /* Default borders */
+    --lb-border-light: #F4F5F7;    /* Lighter borders */
+    --lb-border-focus: #4F6AFB;    /* Focus states */
+    
+    /* Text Colors */
+    --lb-text-primary: #1A202C;    /* Primary text (dark) */
+    --lb-text-secondary: #4A5568;  /* Secondary text */
+    --lb-text-tertiary: #9098A3;   /* Tertiary/disabled text */
+    --lb-text-white: #FFFFFF;      /* White text for colored backgrounds */
+    
+    /* Semantic Colors */
+    --lb-accent-green: #38A169;    /* Success/positive metrics */
+    --lb-accent-red: #E53E3E;      /* Error/negative metrics */
+    --lb-accent-orange: #DD6B20;   /* Warning/attention */
+    --lb-accent-purple: #8B5CF6;   /* Info/analytics */
+    
+    /* Shadow */
+    --lb-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --lb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+    /* Typography Scale */
+    --lb-text-xs: 12px;
+    --lb-text-sm: 14px;
+    --lb-text-base: 16px;
+    --lb-text-lg: 18px;
+    --lb-text-xl: 20px;
+    --lb-text-2xl: 24px;
+    --lb-text-3xl: 30px;
+    
+    /* Spacing */
+    --lb-spacing-xs: 4px;
+    --lb-spacing-sm: 8px;
+    --lb-spacing-md: 16px;
+    --lb-spacing-lg: 24px;
+    --lb-spacing-xl: 32px;
+    
+    /* Border Radius */
+    --lb-radius-sm: 4px;
+    --lb-radius-md: 8px;
+    --lb-radius-lg: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
   }
 
   body {
-    background-color: hsl(var(--lb-bg-primary));
-    color: hsl(var(--lb-text-primary));
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--lb-bg-primary);
+    color: var(--lb-text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography Styles */
+  h1 {
+    font-size: var(--lb-text-2xl);
+    font-weight: 600;
+    color: var(--lb-text-primary);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: var(--lb-text-xl);
+    font-weight: 600;
+    color: var(--lb-text-primary);
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: var(--lb-text-base);
+    font-weight: 500;
+    color: var(--lb-text-secondary);
+    line-height: 1.4;
+  }
+
+  p {
+    font-size: var(--lb-text-sm);
+    font-weight: 400;
+    color: var(--lb-text-primary);
+    line-height: 1.5;
+  }
+
+  /* Button Styles */
+  .btn-primary {
+    background-color: var(--lb-primary-blue);
+    color: var(--lb-text-white);
+    border: none;
+    border-radius: var(--lb-radius-md);
+    padding: 12px 24px;
+    font-size: var(--lb-text-base);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: var(--lb-shadow-sm);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--lb-primary-blue-hover);
+    box-shadow: var(--lb-shadow-md);
+    transform: translateY(-1px);
+  }
+
+  /* Card Styles */
+  .card {
+    background-color: var(--lb-bg-secondary);
+    border: 1px solid var(--lb-border-default);
+    border-radius: var(--lb-radius-lg);
+    box-shadow: var(--lb-shadow-sm);
+    padding: var(--lb-spacing-lg);
+  }
+
+  .card-header {
+    margin-bottom: var(--lb-spacing-md);
+    padding-bottom: var(--lb-spacing-md);
+    border-bottom: 1px solid var(--lb-border-light);
+  }
+
+  /* Form Controls */
+  select, input {
+    background-color: var(--lb-bg-secondary);
+    border: 1px solid var(--lb-border-default);
+    border-radius: var(--lb-radius-sm);
+    padding: 8px 12px;
+    font-size: var(--lb-text-sm);
+    color: var(--lb-text-primary);
+    transition: all 0.2s ease-in-out;
+  }
+
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--lb-border-focus);
+    box-shadow: 0 0 0 3px rgba(79, 106, 251, 0.1);
   }
 }
 
@@ -54,4 +174,21 @@
   .animation-delay-300 {
     animation-delay: 300ms;
   }
+
+  /* Labelbox Utility Classes */
+  .text-primary { color: var(--lb-text-primary); }
+  .text-secondary { color: var(--lb-text-secondary); }
+  .text-tertiary { color: var(--lb-text-tertiary); }
+  
+  .bg-primary { background-color: var(--lb-bg-primary); }
+  .bg-secondary { background-color: var(--lb-bg-secondary); }
+  .bg-tertiary { background-color: var(--lb-bg-tertiary); }
+  
+  .border-default { border-color: var(--lb-border-default); }
+  .border-light { border-color: var(--lb-border-light); }
+  
+  .accent-green { color: var(--lb-accent-green); }
+  .accent-red { color: var(--lb-accent-red); }
+  .accent-orange { color: var(--lb-accent-orange); }
+  .accent-purple { color: var(--lb-accent-purple); }
 }

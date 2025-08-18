@@ -21,14 +21,16 @@ const MemberSelector: React.FC<MemberSelectorProps> = ({
   memberRankings
 }) => {
   return (
-    <div className="flex justify-start mb-6 p-6">
+    <div className="flex justify-start mb-6">
       <div className="flex items-center gap-4">
-        
+        <label htmlFor="member-select" className="text-sm font-medium text-lb-text-secondary">
+          Select Team Member:
+        </label>
         <select
           id="member-select"
           value={selectedMember}
           onChange={(e) => onMemberChange(e.target.value)}
-          className="bg-gray-800 border-2 border-gray-600 text-white text-base rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-500 min-w-[250px] h-12"
+          className="bg-lb-bg-secondary border border-lb-border-default text-lb-text-primary text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lb-primary-blue focus:ring-opacity-20 focus:border-lb-border-focus transition-all duration-200 hover:border-lb-text-tertiary min-w-[250px]"
         >
           {memberRankings.map((ranking) => (
             <option key={ranking.member} value={ranking.member}>
