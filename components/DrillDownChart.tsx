@@ -27,7 +27,7 @@ interface DrillDownChartProps {
 const DrillDownChart: React.FC<DrillDownChartProps> = ({ data, lines, yAxisFormatter, yAxisDomain }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
+      <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
         <XAxis
           dataKey="name"
           stroke="#6b7280"

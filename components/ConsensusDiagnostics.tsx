@@ -13,10 +13,10 @@ import React from 'react';
 const consensusIssues = [
   {
     assetId: "sparkle_drink_01.jpg",
-    imageUrl: "https://placehold.co/600x400/1f2937/7c3aed?text=SparkleDrink+Can",
+    imageUrl: "https://www.tcp.com/storage/content/product/energy-drink/red-bull/red-bull-1.png",
     votes: {
-      "Energy Drink": 3,
-      "Soda": 2,
+      "Soda": 3,
+      "Energy Drink": 2,
     },
     analysis: {
       problem: "Category Ambiguity",
@@ -25,11 +25,10 @@ const consensusIssues = [
   },
   {
     assetId: "blurry_logo_02.jpg",
-    imageUrl: "https://placehold.co/600x400/1f2937/34d399?text=Blurry+Logo",
+    imageUrl: "https://img.fruugo.com/product/8/36/1653837368_0340_0340.jpg",
     votes: {
-      "Branded Mug": 2,
+      "Branded Mug": 3,
       "Unbranded Mug": 2,
-      "Skip": 1,
     },
     analysis: {
       problem: "Insufficient Data Quality",
@@ -38,7 +37,7 @@ const consensusIssues = [
   },
   {
     assetId: "side_view_car_03.jpg",
-    imageUrl: "https://placehold.co/600x400/1f2937/f87171?text=Side-View+Car",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAxD1DkEuwv90_AUjac6RfR5AUHJMXI_K5zw&s",
     votes: {
       "Sedan": 3,
       "Coupe": 2,
@@ -101,7 +100,8 @@ const ConsensusIssueCard: React.FC<ConsensusIssueProps> = ({ issue }) => {
         <img 
           src={issue.imageUrl} 
           alt={issue.assetId} 
-          className="object-cover w-full h-48 md:h-full"
+          className="object-cover w-full h-48 md:h-full max-w-[500px] max-h-[500px]"
+          style={{ maxWidth: '500px', maxHeight: '500px' }}
           onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/ef4444/ffffff?text=Image+Error'; }}
         />
       </div>

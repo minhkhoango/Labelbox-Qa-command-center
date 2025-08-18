@@ -174,12 +174,11 @@ export default function QADashboardPage(): React.JSX.Element {
           </div>
         </div>
 
-        <div style={{ height: '20px' }} />
 
         <div className="flex justify-center py-16">
           <button
             onClick={() => setShowDiagnostics(!showDiagnostics)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-12 py-8 rounded-2xl font-bold text-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl border-2 border-blue-500/50 min-w-[400px] min-h-[80px] flex items-center justify-center"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border-2 border-blue-500/50 min-w-[300px] min-h-[50px] flex items-center justify-center"
           >
             {showDiagnostics ? "Hide Diagnostic Analysis" : "Run Diagnostic Analysis"}
           </button>
@@ -187,7 +186,6 @@ export default function QADashboardPage(): React.JSX.Element {
 
         {showDiagnostics && (
           <div>
-            <div style={{ height: '20px' }}></div>
             <div className="flex flex-row gap-8" style={{ minHeight: '400px' }}>
               <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
                 <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
@@ -222,7 +220,7 @@ export default function QADashboardPage(): React.JSX.Element {
             </div>
             
             {/* Individual Team Member Analysis */}
-            <div style={{ height: '20px' }}></div>
+            <div style={{ height: '30px' }}></div>
             
             <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
               <MemberSelector
