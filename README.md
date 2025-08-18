@@ -41,7 +41,7 @@ To run the dashboard locally and explore its full capabilities:
 **1. Clone the Repository**
 
 ```bash
-git clone [https://github.com/minhkhoango/labelbox-quality-monitor.git](https://github.com/minhkhoango/labelbox-quality-monitor.git)
+git clone https://github.com/minhkhoango/labelbox-quality-monitor.git
 cd labelbox-quality-monitor
 ```
 
