@@ -17,14 +17,14 @@ CORE_TEAM_QUALITY_DIP_MULTIPLIER: float = 1.5 # Rework rate temporarily increase
 
 # Annotator Drift Parameters (Performance degradation over time)
 # Only quality drift - throughput has no drift over time (only affected by training tax)
-CORE_DRIFT_REWORK_RATE_BASE: float = 0.00004  # 5x stronger - realistic 6-month drift
-CORE_DRIFT_REWORK_RATE_EXPONENT: float = 1.8  # More gradual, realistic growth
-CORE_DRIFT_IOU_BASE: float = 0.00006  # 4x stronger - realistic IoU degradation
+CORE_DRIFT_REWORK_RATE_BASE: float = 0.0008  # 20x stronger - realistic 6-month drift
+CORE_DRIFT_REWORK_RATE_EXPONENT: float = 1.2  # More gradual, realistic growth
+CORE_DRIFT_IOU_BASE: float = 0.00020  # Reduced from 0.0008 to keep final IoU above 87%
 CORE_DRIFT_IOU_EXPONENT: float = 1.8  # More gradual, realistic growth
 
-ALEX_DRIFT_REWORK_RATE_BASE: float = 0.00006  # 1.5x stronger than core team
-ALEX_DRIFT_REWORK_RATE_EXPONENT: float = 1.9  # Slightly faster drift for new hire
-ALEX_DRIFT_IOU_BASE: float = 0.00009  # 1.5x stronger than core team
+ALEX_DRIFT_REWORK_RATE_BASE: float = 0.0012  # 1.5x stronger than core team
+ALEX_DRIFT_REWORK_RATE_EXPONENT: float = 1.3  # Slightly faster drift for new hire
+ALEX_DRIFT_IOU_BASE: float = 0.0003  # 1.5x stronger than core team (reduced proportionally)
 ALEX_DRIFT_IOU_EXPONENT: float = 1.9  # Slightly faster drift for new hire
 
 # Core Team Baseline Performance
@@ -47,15 +47,15 @@ ALEX_DRIFT_ALPHA_EXPONENT: float = 1.9  # Slightly faster drift for new hire
 ALEX_THROUGHPUT_START: float = 650.0
 ALEX_THROUGHPUT_END: float = 950.0
 ALEX_REWORK_RATE_START: float = 0.18
-ALEX_REWORK_RATE_END: float = 0.06
+ALEX_REWORK_RATE_END: float = 0.12  # Less dramatic improvement - more realistic
 ALEX_IOU_START: float = 0.88
 ALEX_IOU_END: float = 0.95
 ALEX_ALPHA_START: float = 0.75 # <-- ADD THIS
 ALEX_ALPHA_END: float = 0.90   # <-- ADD THIS
 
 # Output Filenames
-INDIVIDUAL_FILENAME: str = "individual_performance.csv"
-TEAM_FILENAME: str = "team_performance.csv"
+INDIVIDUAL_FILENAME: str = "public/individual_performance.csv"
+TEAM_FILENAME: str = "public/team_performance.csv"
 
 
 def generate_individual_performance() -> List[Dict[str, Any]]:
@@ -214,6 +214,10 @@ def aggregate_and_write_team_performance_csv(individual_data: List[Dict[str, Any
         weighted_alpha_sum = sum(row[alpha_key] * row["Throughput"] for row in weekly_data)
         overall_alpha = weighted_alpha_sum / total_weekly_throughput if total_weekly_throughput > 0 else 0.0
         
+        # Calculate weighted average Mean IoU for the team (weighted by throughput)
+        weighted_iou_sum = sum(row["Mean IoU"] * row["Throughput"] for row in weekly_data)
+        overall_iou = weighted_iou_sum / total_weekly_throughput if total_weekly_throughput > 0 else 0.0
+        
         cumulative_annotations += total_weekly_throughput
         
         team_results.append({
@@ -221,12 +225,13 @@ def aggregate_and_write_team_performance_csv(individual_data: List[Dict[str, Any
             "Weekly Throughput": total_weekly_throughput,
             "Rework Rate (%)": round(overall_rework_rate * 100, 2),
             "Krippendorff's Alpha": round(overall_alpha, 4),
+            "Mean IoU": round(overall_iou, 4),
             "Cumulative Annotations": cumulative_annotations
         })
 
     try:
         with open(filename, 'w', newline='') as csvfile:
-            fieldnames = ["Week", "Weekly Throughput", "Rework Rate (%)", "Krippendorff's Alpha", "Cumulative Annotations"]
+            fieldnames = ["Week", "Weekly Throughput", "Rework Rate (%)", "Krippendorff's Alpha", "Mean IoU", "Cumulative Annotations"]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(team_results)
@@ -243,23 +248,17 @@ def print_drift_summary() -> None:
     # Core team drift over 24 weeks
     core_final_rework_drift = CORE_DRIFT_REWORK_RATE_BASE * (TOTAL_WEEKS ** CORE_DRIFT_REWORK_RATE_EXPONENT)
     core_final_iou_drift = CORE_DRIFT_IOU_BASE * (TOTAL_WEEKS ** CORE_DRIFT_IOU_EXPONENT)
+    core_final_alpha_drift = CORE_DRIFT_ALPHA_BASE * (TOTAL_WEEKS ** CORE_DRIFT_ALPHA_EXPONENT)
     
     # Alex drift over their 16 weeks (weeks 9-24)
     alex_weeks = TOTAL_WEEKS - NEW_HIRE_START_WEEK + 1
     alex_final_rework_drift = ALEX_DRIFT_REWORK_RATE_BASE * (TOTAL_WEEKS ** ALEX_DRIFT_REWORK_RATE_EXPONENT)
     alex_final_iou_drift = ALEX_DRIFT_IOU_BASE * (TOTAL_WEEKS ** ALEX_DRIFT_IOU_EXPONENT)
+    alex_final_alpha_drift = ALEX_DRIFT_ALPHA_BASE * (TOTAL_WEEKS ** ALEX_DRIFT_ALPHA_EXPONENT)
     
-    print(f"Core Team Drift Over {TOTAL_WEEKS} Weeks:")
-    print(f"  • Rework Rate: +{core_final_rework_drift:.3f} (+{core_final_rework_drift*100:.1f}%)")
-    print(f"  • IoU: -{core_final_iou_drift:.3f} (-{core_final_iou_drift*100:.1f}%)")
-    print(f"  • Throughput: No drift (only affected by training tax at week 9)")
-    
-    print(f"\nAlex Drift Over {alex_weeks} Weeks (Weeks {NEW_HIRE_START_WEEK}-{TOTAL_WEEKS}):")
-    print(f"  • Rework Rate: +{alex_final_rework_drift:.3f} (+{alex_final_rework_drift*100:.1f}%)")
-    print(f"  • IoU: -{alex_final_iou_drift:.3f} (-{alex_final_iou_drift*100:.1f}%)")
-    print(f"  • Throughput: No drift (improves linearly from start to end)")
-    
-    print(f"\nNote: Alex experiences {ALEX_DRIFT_REWORK_RATE_BASE/CORE_DRIFT_REWORK_RATE_BASE:.0f}x stronger drift effects")
+    print(f"Core Team ({TOTAL_WEEKS} weeks): Rework +{core_final_rework_drift:.3f}, IoU -{core_final_iou_drift:.3f}, Alpha -{core_final_alpha_drift:.3f}")
+    print(f"Alex ({alex_weeks} weeks): Rework +{alex_final_rework_drift:.3f}, IoU -{alex_final_iou_drift:.3f}, Alpha -{alex_final_alpha_drift:.3f}")
+    print(f"Alex drift: {ALEX_DRIFT_REWORK_RATE_BASE/CORE_DRIFT_REWORK_RATE_BASE:.0f}x stronger than core team")
     print("="*60)
 
 

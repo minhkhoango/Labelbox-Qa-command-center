@@ -1,5 +1,5 @@
 //
-// FILE: components/MainDashboardChart.tsx (Previously AnimatedDiagnosticChart.tsx)
+// FILE: components/MainDashboardChart.tsx
 // CLASSIFICATION: TOP SECRET // OGM-V2 // STATIC SUMMARY VIEW
 // PURPOSE: Displays the main, high-level summary of the project.
 //
@@ -35,7 +35,7 @@ const MainDashboardChart: React.FC<MainChartProps> = ({ data }) => {
           </defs>
         <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
         <YAxis yAxisId="left" orientation="left" stroke="#6b7280" fontSize={12} domain={[0, 'dataMax']} />
-        <YAxis yAxisId="right" orientation="right" stroke="#6b7280" fontSize={12} tickFormatter={(value) => `${value.toFixed(1)}%`} domain={[0, 15]} />
+        <YAxis yAxisId="right" orientation="right" stroke="#6b7280" fontSize={12} tickFormatter={(value) => `${value.toFixed(1)}%`} domain={[0, 10]} />
         <Tooltip
           contentStyle={{ backgroundColor: '#1f2937', borderColor: '#4b5563', borderRadius: '0.5rem' }}
           labelStyle={{ color: '#d1d5db' }}

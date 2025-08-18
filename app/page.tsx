@@ -6,10 +6,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
-import MainDashboardChart from '../components/MainDashboardChart'; // Renamed from AnimatedDiagnosticChart
+import MainDashboardChart from '../components/MainDashboardChart';
 import DrillDownChart from '../components/DrillDownChart';
-import PrecisionDiagnostics from '../components/PrecisionDiagnostics';
+import IndividualTeamMemberChart from '../components/IndividualTeamMemberChart';
 import ConsensusDiagnostics from '../components/ConsensusDiagnostics';
+import MemberSelector from '../components/MemberSelector';
+import { getTeamMemberRankings, getWorstPerformingMember } from '../lib/performanceUtils';
 
 // Define the shape of our parsed data once
 export interface ProjectDataPoint {
@@ -17,6 +19,8 @@ export interface ProjectDataPoint {
   "Weekly Throughput": number;
   "Rework Rate (%)": number;
   "Cumulative Annotations": number;
+  "Krippendorff's Alpha": number;
+  "Mean IoU": number;
 }
 
 // Define the shape for the new chart data
@@ -25,49 +29,81 @@ export interface DiagnosticDataPoint {
     [key: string]: string | number | null;
 }
 
+// Define the shape for individual performance data
+export interface IndividualDataPoint {
+  Week: string;
+  Member: string;
+  Throughput: number;
+  "Reworked Annotations": number;
+  "Rework Rate": number;
+  "Mean IoU": number;
+  "Krippendorff's Alpha": number;
+}
+
 export default function QADashboardPage(): React.JSX.Element {
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
   const [projectData, setProjectData] = useState<ProjectDataPoint[]>([]);
+  const [individualData, setIndividualData] = useState<IndividualDataPoint[]>([]);
+  const [selectedMember, setSelectedMember] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Using the user-uploaded CSV file
-        const response = await fetch('/team_performance.csv');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // Fetch team performance data
+        const teamResponse = await fetch('/team_performance.csv');
+        if (!teamResponse.ok) {
+          throw new Error(`HTTP error! status: ${teamResponse.status}`);
         }
-        const text = await response.text();
-        const result = Papa.parse<ProjectDataPoint>(text, {
+        const teamText = await teamResponse.text();
+        const teamResult = Papa.parse<ProjectDataPoint>(teamText, {
           header: true,
           dynamicTyping: false, // Don't auto-convert types
           skipEmptyLines: true,
         });
-        if (result.errors && result.errors.length > 0) {
-          console.error('Team CSV parsing errors:', result.errors);
+        if (teamResult.errors && teamResult.errors.length > 0) {
+          console.error('Team CSV parsing errors:', teamResult.errors);
         }
         
         // Convert string values to appropriate types
-        const processedData = result.data.map(row => ({
+        const processedTeamData = teamResult.data.map(row => ({
           ...row,
           Week: String(row.Week),
           "Weekly Throughput": Number(row["Weekly Throughput"]),
           "Rework Rate (%)": Number(row["Rework Rate (%)"]),
-          "Cumulative Annotations": Number(row["Cumulative Annotations"])
+          "Cumulative Annotations": Number(row["Cumulative Annotations"]),
+          "Krippendorff's Alpha": Number(row["Krippendorff's Alpha"]),
+          "Mean IoU": Number(row["Mean IoU"]),
         }));
         
-        setProjectData(processedData);
+        setProjectData(processedTeamData);
+
+        // Fetch individual performance data
+        const individualResponse = await fetch('/individual_performance.csv');
+        if (!individualResponse.ok) {
+          throw new Error(`HTTP error! status: ${individualResponse.status}`);
+        }
+        const individualText = await individualResponse.text();
+        const individualResult = Papa.parse<IndividualDataPoint>(individualText, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+        });
+        if (individualResult.errors && individualResult.errors.length > 0) {
+          console.error('Individual CSV parsing errors:', individualResult.errors);
+        }
+        
+        setIndividualData(individualResult.data);
       } catch (error) {
-        console.error('Error fetching team performance data:', error);
+        console.error('Error fetching data:', error);
       }
     };
     fetchData();
   }, []);
 
   // Memoize all data transformations to prevent re-calculating on every render
-  const { kpis, reworkChartData, iouChartData } = useMemo(() => {
+  const { kpis, iouChartData } = useMemo(() => {
     if (projectData.length === 0) {
-      return { kpis: { totalAnnotations: 0, finalReworkRate: "0.0%", reworkCost: "$0" }, reworkChartData: [], iouChartData: [] };
+      return { kpis: { totalAnnotations: 0, finalReworkRate: "0.0%", reworkCost: "$0" }, iouChartData: [] };
     }
     const lastEntry = projectData[projectData.length - 1];
     
@@ -78,22 +114,31 @@ export default function QADashboardPage(): React.JSX.Element {
     };
 
     const diagnosticData = projectData.map((d, i) => {
-        const teamRework = d["Rework Rate (%)"];
-        // Logic from your prompt, ensuring Alex's data starts at week 9 (index 8)
-        const alexRework = i >= 8 ? teamRework * 1.5 + (Math.random() * 0.02) : null;
-        // Your IoU formula, scaled to a 0-1 range for the percentage axis
-        const teamIoU = (96 - (i > 8 ? (i - 8) * 0.5 : 0) + (Math.random() - 0.5) * 2) / 100;
+        const teamAlpha = d["Krippendorff's Alpha"];
+        const teamIoU = d["Mean IoU"]; // Use real data instead of hardcoded calculation
 
         return {
             name: `W${i + 1}`,
-            "Team Rework Rate": teamRework,
-            "Alex's Rework Rate": alexRework,
-            "Team Avg. Precision (IoU)": teamIoU,
+            "Team Avg Precision (IoU)": teamIoU,
+            "Team Consensus (Alpha)": teamAlpha,
         };
     });
 
-    return { kpis: kpiData, reworkChartData: diagnosticData, iouChartData: diagnosticData };
+    return { kpis: kpiData, iouChartData: diagnosticData };
   }, [projectData]);
+
+  // Get team member rankings and set default selected member
+  const memberRankings = useMemo(() => {
+    if (!individualData || individualData.length === 0) return [];
+    return getTeamMemberRankings(individualData);
+  }, [individualData]);
+
+  // Set default selected member to worst performer when data loads
+  useEffect(() => {
+    if (memberRankings.length > 0 && !selectedMember) {
+      setSelectedMember(getWorstPerformingMember(individualData));
+    }
+  }, [memberRankings, selectedMember, individualData]);
 
   if (projectData.length === 0) {
     return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading Project Data...</div>;
@@ -146,42 +191,61 @@ export default function QADashboardPage(): React.JSX.Element {
             <div className="flex flex-row gap-8" style={{ minHeight: '400px' }}>
               <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
                 <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
-                  Rework Rate Analysis: Team vs. Alex
-                </h3>
-                <div className="h-[320px] w-full">
-                  <DrillDownChart 
-                    data={reworkChartData}
-                    lines={[
-                      { dataKey: "Team Rework Rate", color: "#F87171" },
-                      { dataKey: "Alex's Rework Rate", color: "#EF4444", strokeDasharray: "5 5" },
-                    ]}
-                    yAxisFormatter={(value: number) => `${(value).toFixed(1)}%`}
-                    yAxisDomain={[0, 15]}
-                  />
-                </div>
-              </div>
-              <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
                   Team Precision (IoU) Analysis
                 </h3>
                 <div className="h-[320px] w-full">
                   <DrillDownChart 
                     data={iouChartData}
                     lines={[
-                      { dataKey: "Team Avg. Precision (IoU)", color: "#34D399" },
+                      { dataKey: "Team Avg Precision (IoU)", color: "#34D399" },
                     ]}
-                    yAxisFormatter={(value: number) => `${(value * 100).toFixed(0)}%`}
-                    yAxisDomain={[0.85, 1.0]}
+                    yAxisFormatter={(value: number) => value.toFixed(3)}
+                    yAxisDomain={[0.8, 1.0]}
+                  />
+                </div>
+              </div>
+              <div className="w-1/2 bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
+                  Team Consensus (Krippendorff's Alpha)
+                </h3>
+                <div className="h-[320px] w-full">
+                  <DrillDownChart 
+                    data={iouChartData}
+                    lines={[
+                      { dataKey: "Team Consensus (Alpha)", color: "#8B5CF6" },
+                    ]}
+                    yAxisFormatter={(value: number) => value.toFixed(3)}
+                    yAxisDomain={[0.8, 1.0]}
                   />
                 </div>
               </div>
             </div>
             
-            {/* Additional Diagnostic Components */}
+            {/* Individual Team Member Analysis */}
             <div style={{ height: '20px' }}></div>
             
-            {/* PrecisionDiagnostics now fetches its own data from CSV */}
-            <PrecisionDiagnostics />
+            <div className="bg-[#111827] border border-gray-700 rounded-lg shadow-lg p-6">
+              <MemberSelector
+                selectedMember={selectedMember}
+                onMemberChange={setSelectedMember}
+                memberRankings={memberRankings}
+              />
+              
+              {selectedMember && (
+                <div className="bg-[#1F2937] border border-gray-600 rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-gray-300 mb-4 text-center">
+                    {selectedMember} - 24-Week Performance Overview
+                  </h3>
+                  <div className="h-[400px] w-full">
+                    <IndividualTeamMemberChart 
+                      data={individualData} 
+                      memberName={selectedMember} 
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div style={{ height: '20px' }}></div>
             
             <ConsensusDiagnostics />
           </div>
