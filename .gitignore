@@ -40,8 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated data
-individual_performance.csv
-team_performance.csv
-
 __pycache__
