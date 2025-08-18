@@ -103,14 +103,17 @@ export default function QADashboardPage(): React.JSX.Element {
   // Memoize all data transformations to prevent re-calculating on every render
   const { kpis, iouChartData } = useMemo(() => {
     if (projectData.length === 0) {
-      return { kpis: { totalAnnotations: 0, finalReworkRate: "0.0%", reworkCost: "$0" }, iouChartData: [] };
+      return { kpis: { totalAnnotations: 0, finalReworkRate: "0.0%", reworkCost: "$0", downstreamImpact: "$0" }, iouChartData: [] };
     }
     const lastEntry = projectData[projectData.length - 1];
+    
+    const { totalReworkCost, totalDownstreamImpact } = calculateReworkCost(projectData);
     
     const kpiData = {
       totalAnnotations: lastEntry["Cumulative Annotations"].toLocaleString(),
       finalReworkRate: `${lastEntry["Rework Rate (%)"].toFixed(1)}%`,
-      reworkCost: calculateReworkCost(projectData),
+      reworkCost: totalReworkCost,
+      downstreamImpact: totalDownstreamImpact,
     };
 
     const diagnosticData = projectData.map((d, i) => {
@@ -171,8 +174,12 @@ export default function QADashboardPage(): React.JSX.Element {
               <p className="text-xl font-bold text-lb-text-primary">{kpis.totalAnnotations}</p>
             </div>
             <div className="text-right">
-              <span className="text-sm text-lb-text-secondary block">Est. Quality Drift Cost</span>
-              <p className="text-xl font-bold accent-red">{kpis.reworkCost}</p>
+              <span className="text-sm text-lb-text-secondary block">Down Stream Impact</span>
+              <p className="text-lg font-bold text-red-500">{kpis.downstreamImpact}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm text-lb-text-secondary block">Rework Cost</span>
+              <p className="text-lg text-red-500">{kpis.reworkCost}</p>
             </div>
           </div>
         </header>

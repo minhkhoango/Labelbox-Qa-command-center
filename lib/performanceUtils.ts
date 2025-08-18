@@ -106,10 +106,10 @@ export function getWorstPerformingMember(data: IndividualDataPoint[]): string {
  * Downstream Impact = Σ[Max(0, (IoU_week_1 - IoU_week_i)) * 10,000,000]
  * 
  * @param projectData - Array of project data points
- * @returns The calculated cost as a formatted currency string
+ * @returns An object containing both rework cost and downstream impact as formatted currency strings
  */
-export function calculateReworkCost(projectData: any[]): string {
-  if (projectData.length === 0) return "$0";
+export function calculateReworkCost(projectData: any[]): { totalReworkCost: string; totalDownstreamImpact: string } {
+  if (projectData.length === 0) return { totalReworkCost: "$0", totalDownstreamImpact: "$0" };
   
   // Constants from the user's specification
   const TIME_TAKEN_PER_ANNOTATION = 0.033; // hours per annotation
@@ -145,22 +145,24 @@ export function calculateReworkCost(projectData: any[]): string {
     totalDownstreamImpact += downstreamImpact;
   }
   
-  // Total estimated quality drift
-  const totalEstimatedDrift = totalReworkCost + totalDownstreamImpact;
-  
   // Debug logging in development
   if (process.env.NODE_ENV === 'development') {
     console.log('Quality Drift Cost Calculation Debug:');
     console.log(`  Total Rework Cost: $${totalReworkCost.toFixed(2)}`);
     console.log(`  Total Downstream Impact: $${totalDownstreamImpact.toFixed(2)}`);
-    console.log(`  Total Estimated Quality Drift: $${totalEstimatedDrift.toFixed(2)}`);
+    console.log(`  Total Estimated Quality Drift: $${(totalReworkCost + totalDownstreamImpact).toFixed(2)}`);
   }
   
-  // Format the result as currency
-  return new Intl.NumberFormat('en-US', {
+  // Format both results as currency
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(totalEstimatedDrift);
+  }).format(value);
+  
+  return {
+    totalReworkCost: formatCurrency(totalReworkCost),
+    totalDownstreamImpact: formatCurrency(totalDownstreamImpact)
+  };
 } 
