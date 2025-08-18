@@ -8,6 +8,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
 import MainDashboardChart from '../components/MainDashboardChart'; // Renamed from AnimatedDiagnosticChart
 import DrillDownChart from '../components/DrillDownChart';
+import PrecisionDiagnostics from '../components/PrecisionDiagnostics';
+import ConsensusDiagnostics from '../components/ConsensusDiagnostics';
 
 // Define the shape of our parsed data once
 export interface ProjectDataPoint {
@@ -29,15 +31,35 @@ export default function QADashboardPage(): React.JSX.Element {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Using the user-uploaded CSV file
-      const response = await fetch('/project_chimera_dataset.csv');
-      const text = await response.text();
-      const result = Papa.parse<ProjectDataPoint>(text, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-      });
-      setProjectData(result.data);
+      try {
+        // Using the user-uploaded CSV file
+        const response = await fetch('/team_performance.csv');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        const result = Papa.parse<ProjectDataPoint>(text, {
+          header: true,
+          dynamicTyping: false, // Don't auto-convert types
+          skipEmptyLines: true,
+        });
+        if (result.errors && result.errors.length > 0) {
+          console.error('Team CSV parsing errors:', result.errors);
+        }
+        
+        // Convert string values to appropriate types
+        const processedData = result.data.map(row => ({
+          ...row,
+          Week: String(row.Week),
+          "Weekly Throughput": Number(row["Weekly Throughput"]),
+          "Rework Rate (%)": Number(row["Rework Rate (%)"]),
+          "Cumulative Annotations": Number(row["Cumulative Annotations"])
+        }));
+        
+        setProjectData(processedData);
+      } catch (error) {
+        console.error('Error fetching team performance data:', error);
+      }
     };
     fetchData();
   }, []);
@@ -154,6 +176,14 @@ export default function QADashboardPage(): React.JSX.Element {
                 </div>
               </div>
             </div>
+            
+            {/* Additional Diagnostic Components */}
+            <div style={{ height: '20px' }}></div>
+            
+            {/* PrecisionDiagnostics now fetches its own data from CSV */}
+            <PrecisionDiagnostics />
+            
+            <ConsensusDiagnostics />
           </div>
         )}
       </div>
